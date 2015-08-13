@@ -130,4 +130,5 @@ class Reactive:
         """
         for dependent in self.control[variable]['dependents']:
             self.__dict__[dependent] = eval(self.control[dependent]['equation'], self.__dict__)
-        
+        for dependent in self.control[variable]['dependents']:
+            self.update(dependent)
