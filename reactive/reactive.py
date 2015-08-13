@@ -40,6 +40,8 @@ class Reactive:
                     if not self.is_cycle(parent, variable):
                         self.control[parent]['dependents'].append(variable)
                         self.__dict__[variable] = eval(equation, self.__dict__)
+                    else:
+                        raise Exception('Cyclical references are not allowed.')
                 self.control[variable] = {
                             'dependents': [],
                             'equation': equation,
@@ -60,6 +62,8 @@ class Reactive:
                     if not self.is_cycle(parent, variable):
                         self.control[parent]['dependents'].append(variable)
                         self.__dict__[variable] = eval(equation, self.__dict__)
+                    else:
+                        raise Exception('Cyclical references are not allowed.')
                 self.control[variable]['equation'] = equation
                 self.control[variable]['parents'] = [parent for parent in re.findall(r'[_A-Za-z][_\dA-Za-z]*', equation)]
             elif value != '': # Was equation, not equation
@@ -85,8 +89,14 @@ class Reactive:
             self.update(variable)
         else:
             raise Exception('Variable does not exists. Use the add function to add a new variable.')
+        print(self)
 
-    def is_cycle(self, variable_1, variable_2):
+    def is_cycle(self, parent, child):
+        if child in self.control[parent]['parents']:
+            return True
+        for _ in self.control[parent]['parents']:
+            if self.is_cycle(_, child):
+                return True
         return False
 
     def update(self, variable):
