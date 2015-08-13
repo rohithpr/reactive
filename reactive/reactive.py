@@ -15,7 +15,7 @@ class Reactive:
     Reactive
     """
     def get_parents(self, equation):
-        parents = re.findall(r'([_A-Za-z][\w]*|"[\w\t\n ]*")*', equation)
+        parents = re.findall(r'([_A-Za-z][\w]*|"[^"]*")*', equation)
         clean_up(parents)
         # print(equation, parents)
         # for parent in parents:
@@ -53,7 +53,6 @@ class Reactive:
                             }
             elif equation != '':
                 parents = self.get_parents(equation)
-                clean_up(parents)
                 for parent in parents:
                     if not self.is_cycle(parent, variable):
                         self.control[parent]['dependents'].append(variable)
