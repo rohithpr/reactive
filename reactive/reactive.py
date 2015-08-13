@@ -1,13 +1,29 @@
 import keyword
 import re
 
+reserved = keyword.kwlist[:]
+reserved += ['sum', 'range']
+
 def clean_up(parents):
-    parents[:] = list(filter(lambda x: x not in keyword.kwlist, parents))
+
+    temp = list(filter(lambda x: x != '' and x not in reserved, parents))
+    temp = list(filter(lambda x: '"' not in x, temp))
+    parents[:] = temp
 
 class Reactive:
     """
     Reactive
     """
+    def get_parents(self, equation):
+        parents = re.findall(r'([_A-Za-z][\w]*|"[\w\t\n ]*")*', equation)
+        clean_up(parents)
+        # print(equation, parents)
+        # for parent in parents:
+        #     print(parent)
+        #     if re.search(r'^\"[\w+\t\n ]*\"$', parent) is not None:
+        #         parents.remove(parent)
+        return list(parents)
+
     def __init__(self):
         self.control = {}
         pass
@@ -24,8 +40,10 @@ class Reactive:
         return temp
 
     def add(self, variable, value='', equation=''):
+        """
+        Add a new variable into the reactive object.
+        """
         if variable not in self.control:
-        # if True:
             if value != '':
                 self.__dict__[variable] = value
                 self.control[variable] = {
@@ -34,14 +52,14 @@ class Reactive:
                             'parents': [],
                             }
             elif equation != '':
-                parents = re.findall(r'[_A-Za-z][_\dA-Za-z]*', equation)
+                parents = self.get_parents(equation)
                 clean_up(parents)
                 for parent in parents:
                     if not self.is_cycle(parent, variable):
                         self.control[parent]['dependents'].append(variable)
-                        self.__dict__[variable] = eval(equation, self.__dict__)
                     else:
                         raise Exception('Cyclical references are not allowed.')
+                self.__dict__[variable] = eval(equation, self.__dict__)
                 self.control[variable] = {
                             'dependents': [],
                             'equation': equation,
@@ -51,19 +69,23 @@ class Reactive:
                 raise Exception('Either value or equation must be defined')
         else:
             raise Exception('Variable exists. Use modify to change it.')
-        print(self)
+        # print(self)
 
     def modify(self, variable, value='', equation=''):
+        """
+        Modify a variable in the reactive object.
+        """
         if variable in self.control:
             if self.control[variable]['equation'] == '' and value != '': # Wasn't equation, not equation
                 self.__dict__[variable] = value
             elif self.control[variable]['equation'] == '' and equation != '': # Wasn't equation, now equation
-                for parent in re.findall(r'[_A-Za-z][_\dA-Za-z]*', equation):
+                parents = get_parents()
+                for parent in parents:
                     if not self.is_cycle(parent, variable):
                         self.control[parent]['dependents'].append(variable)
-                        self.__dict__[variable] = eval(equation, self.__dict__)
                     else:
                         raise Exception('Cyclical references are not allowed.')
+                self.__dict__[variable] = eval(equation, self.__dict__)
                 self.control[variable]['equation'] = equation
                 self.control[variable]['parents'] = [parent for parent in re.findall(r'[_A-Za-z][_\dA-Za-z]*', equation)]
             elif value != '': # Was equation, not equation
@@ -73,7 +95,7 @@ class Reactive:
                 self.control[variable]['equation'] = ''
                 self.__dict__[variable] = value
             elif equation != '': # Was equation, now equation
-                new_parents = re.findall(r'[_A-Za-z][_\dA-Za-z]*', equation)
+                new_parents = get_parents
                 old_parents = self.control[variable]['parents'][:]
                 for parent in old_parents:
                     if parent not in new_parents:
@@ -89,9 +111,12 @@ class Reactive:
             self.update(variable)
         else:
             raise Exception('Variable does not exists. Use the add function to add a new variable.')
-        print(self)
+        # print(self)
 
     def is_cycle(self, parent, child):
+        """
+        Detects any cyclical dependecies.
+        """
         if child in self.control[parent]['parents']:
             return True
         for _ in self.control[parent]['parents']:
@@ -100,5 +125,9 @@ class Reactive:
         return False
 
     def update(self, variable):
+        """
+        Updates all the dependents of a variable once it has been changed.
+        """
         for dependent in self.control[variable]['dependents']:
             self.__dict__[dependent] = eval(self.control[dependent]['equation'], self.__dict__)
+        
