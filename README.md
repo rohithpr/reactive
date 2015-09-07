@@ -104,3 +104,37 @@ Variable var_2: hello world.
 
 Variable var_3: 45
 ```
+
+Example 5:  
+Set variables directly and then use update() when results are required if the value of a variable will change frequently and the derived value will isn't required immediately.
+
+```python
+obj.add('var_1', value = 10)
+obj.add('var_2', equation = 'var_1 * 2')
+print(obj)
+obj.var_1 = 20
+print(obj) # Value of var_2 will not be updated
+obj.var_1 = 30
+obj.update('var_1')
+print(obj)
+```
+
+Output:  
+
+```
+Variable var_1: 10
+
+Variable var_2: 20
+
+-
+
+Variable var_1: 20
+
+Variable var_2: 20
+
+-
+
+Variable var_1: 30
+
+Variable var_2: 60
+```
