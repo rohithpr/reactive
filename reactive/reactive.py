@@ -2,7 +2,7 @@ import keyword
 import re
 
 reserved = keyword.kwlist[:]
-reserved += ['sum', 'range', 'int', 'float', 'str']
+reserved += ['sum', 'range', 'int', 'float', 'str', 'list', 'tuple', 'set', 'dict']
 
 def clean_up(parents):
 
