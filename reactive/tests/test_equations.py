@@ -40,3 +40,10 @@ def test_5():
     obj.add('var_3', value = 'ghi')
     obj.add('var_4', equation = '3 * str(var_1) + var_2 + var_3')
     assert obj.var_4 == '121212dghi'
+
+def test_6():
+    obj = Reactive()
+    obj.add('var_1', value = [2, 3])
+    obj.add('var_2', value = [4, 5])
+    obj.add('var_3', equation = 'var_1[1] + var_2[1]')
+    assert obj.var_3 == 8
